@@ -1,4 +1,5 @@
 pub mod config;
+pub mod render;
 
 use cosmwasm_std::{Deps, Env};
 

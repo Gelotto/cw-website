@@ -1,5 +1,5 @@
 [package]
-name = "cw-contract"
+name = "contract"
 version = "0.0.1"
 authors = []
 edition = "2021"
@@ -37,6 +37,8 @@ cosmwasm-std = { version = "1.5.2" }
 schemars = "0.8.16"
 serde = { version = "1.0.196", default-features = false, features = ["derive"] }
 thiserror = { version = "1.0.56" }
+# liquid = "0.26.6"
+minijinja = "2.0.3"
 
 [dev-dependencies]
 cw-multi-test = { version = "0.20.0" }

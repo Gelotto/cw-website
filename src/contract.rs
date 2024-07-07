@@ -1,6 +1,8 @@
 use crate::error::ContractError;
+use crate::execute::upsert_template::exec_upsert_template;
 use crate::execute::{set_config::exec_set_config, Context};
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, TemplatesExecuteMsg};
+use crate::query::render::query_render;
 use crate::query::{config::query_config, ReadonlyContext};
 use crate::state;
 use cosmwasm_std::{entry_point, to_json_binary};
@@ -31,6 +33,11 @@ pub fn execute(
     let ctx = Context { deps, env, info };
     match msg {
         ExecuteMsg::SetConfig(config) => exec_set_config(ctx, config),
+        ExecuteMsg::Templates(msg) => match msg {
+            TemplatesExecuteMsg::Upsert { path, template } => {
+                exec_upsert_template(ctx, path, template)
+            },
+        },
     }
 }
 
@@ -43,6 +50,7 @@ pub fn query(
     let ctx = ReadonlyContext { deps, env };
     let result = match msg {
         QueryMsg::Config {} => to_json_binary(&query_config(ctx)?),
+        QueryMsg::Render { path, params } => to_json_binary(&query_render(ctx, path, params)?),
     }?;
     Ok(result)
 }
