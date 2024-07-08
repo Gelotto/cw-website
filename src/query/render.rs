@@ -1,12 +1,9 @@
-use minijinja::{context, Environment};
+use serde_json::{Map as SerdeMap, Value};
+use tinytemplate::TinyTemplate;
 
 use crate::{
     error::ContractError,
-    msg::RenderParams,
-    state::{
-        models::WebsiteMetadata,
-        storage::{TEMPLATES, WEBSITE_TITLE},
-    },
+    state::storage::{TEMPLATES, WEBSITE_TITLE},
 };
 
 use super::ReadonlyContext;
@@ -14,52 +11,36 @@ use super::ReadonlyContext;
 pub fn query_render(
     ctx: ReadonlyContext,
     path: String,
-    params: Option<RenderParams>,
+    context: Option<Value>,
 ) -> Result<String, ContractError> {
     let ReadonlyContext { deps, .. } = ctx;
 
-    let mut jinja_env = Environment::new();
-
-    let template_str = &TEMPLATES
-        .load(deps.storage, &path)
-        .map_err(|e| ContractError::Std(e))?;
-
-    // Init template object
-    jinja_env
-        .add_template(&path, &template_str)
-        .map_err(|e| ContractError::TemplateError {
-            reason: e.to_string(),
-        })?;
-
-    let template = jinja_env
-        .get_template(&path)
-        .map_err(|e| ContractError::TemplateError {
-            reason: e.to_string(),
-        })?;
-
-    let meta = WebsiteMetadata {
-        title: WEBSITE_TITLE.load(deps.storage)?,
-    };
-
-    // Augment context with any route specific params
-    let context = if let Some(params) = params {
-        match params {
-            RenderParams::Echo { message } => {
-                context! {
-                    meta => meta,
-                    message => message,
-                }
-            },
-        }
-    } else {
-        context! {
-            meta => meta
-        }
-    };
+    // Initialize template renderer
+    let mut template = TinyTemplate::new();
+    let template_str = TEMPLATES.load(deps.storage, &path).map_err(|e| ContractError::Std(e))?;
 
     template
-        .render(context)
-        .map_err(|e| ContractError::RenderError {
-            reason: e.to_string(),
-        })
+        .add_template(&path, &template_str)
+        .map_err(|e| ContractError::TemplateError { reason: e.to_string() })?;
+
+    // Initialize template rendering context object
+    let mut map = SerdeMap::with_capacity(8);
+
+    map.insert(
+        "meta".to_owned(),
+        Value::Object(SerdeMap::from_iter([
+            ("title".to_owned(), Value::String(WEBSITE_TITLE.load(deps.storage)?)),
+            ("path".to_owned(), Value::String(path.to_owned())),
+        ])),
+    );
+
+    // Add context data from args
+    if let Some(data) = context {
+        map.insert("data".to_owned(), data);
+    };
+
+    // Render and return HTML
+    template
+        .render(&path, &Value::Object(map))
+        .map_err(|e| ContractError::RenderError { reason: e.to_string() })
 }

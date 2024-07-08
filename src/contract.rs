@@ -50,7 +50,7 @@ pub fn query(
     let ctx = ReadonlyContext { deps, env };
     let result = match msg {
         QueryMsg::Config {} => to_json_binary(&query_config(ctx)?),
-        QueryMsg::Render { path, params } => to_json_binary(&query_render(ctx, path, params)?),
+        QueryMsg::Render { path, context } => to_json_binary(&query_render(ctx, path, context)?),
     }?;
     Ok(result)
 }

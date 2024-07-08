@@ -1,4 +1,5 @@
 use cosmwasm_schema::cw_serde;
+use serde_json::Value;
 
 use crate::state::models::Config;
 
@@ -19,17 +20,15 @@ pub enum ExecuteMsg {
 }
 
 #[cw_serde]
-pub enum RenderParams {
-    Echo { message: String },
+pub struct ContextValue {
+    pub name: String,
+    pub value: Value,
 }
 
 #[cw_serde]
 pub enum QueryMsg {
     Config {},
-    Render {
-        path: String,
-        params: Option<RenderParams>,
-    },
+    Render { path: String, context: Option<Value> },
 }
 
 #[cw_serde]
