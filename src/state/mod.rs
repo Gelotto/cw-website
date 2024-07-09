@@ -2,7 +2,8 @@ pub mod models;
 pub mod storage;
 
 use cosmwasm_std::Response;
-use storage::WEBSITE_TITLE;
+use models::Config;
+use storage::{CONFIG, SITE_TITLE};
 
 use crate::{error::ContractError, execute::Context, msg::InstantiateMsg};
 
@@ -13,7 +14,8 @@ pub fn init(
 ) -> Result<Response, ContractError> {
     let Context { deps, .. } = ctx;
 
-    WEBSITE_TITLE.save(deps.storage, &msg.title)?;
+    SITE_TITLE.save(deps.storage, &msg.title)?;
+    CONFIG.save(deps.storage, &msg.config)?;
 
     Ok(Response::new().add_attribute("action", "instantiate"))
 }

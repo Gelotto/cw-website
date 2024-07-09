@@ -1,7 +1,9 @@
 use crate::error::ContractError;
+use crate::execute::upsert_asset::exec_upsert_asset;
 use crate::execute::upsert_template::exec_upsert_template;
 use crate::execute::{set_config::exec_set_config, Context};
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, TemplatesExecuteMsg};
+use crate::msg::{AssetsExecuteMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, TemplatesExecuteMsg};
+use crate::query::asset::query_asset;
 use crate::query::render::query_render;
 use crate::query::{config::query_config, ReadonlyContext};
 use crate::state;
@@ -33,10 +35,16 @@ pub fn execute(
     let ctx = Context { deps, env, info };
     match msg {
         ExecuteMsg::SetConfig(config) => exec_set_config(ctx, config),
+        ExecuteMsg::Assets(msg) => match msg {
+            AssetsExecuteMsg::Upsert { name, mime_type, data } => exec_upsert_asset(ctx, name, mime_type, data),
+        },
         ExecuteMsg::Templates(msg) => match msg {
-            TemplatesExecuteMsg::Upsert { path, template } => {
-                exec_upsert_template(ctx, path, template)
-            },
+            TemplatesExecuteMsg::Upsert {
+                path,
+                template,
+                scripts,
+                styles,
+            } => exec_upsert_template(ctx, path, template, scripts, styles),
         },
     }
 }
@@ -50,6 +58,7 @@ pub fn query(
     let ctx = ReadonlyContext { deps, env };
     let result = match msg {
         QueryMsg::Config {} => to_json_binary(&query_config(ctx)?),
+        QueryMsg::Asset { name } => to_json_binary(&query_asset(ctx, name)?),
         QueryMsg::Render { path, context } => to_json_binary(&query_render(ctx, path, context)?),
     }?;
     Ok(result)
