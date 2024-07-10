@@ -1,4 +1,5 @@
 pub mod set_config;
+pub mod set_metadata;
 pub mod upsert_asset;
 pub mod upsert_template;
 

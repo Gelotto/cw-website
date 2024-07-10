@@ -14,6 +14,12 @@ pub fn exec_upsert_template(
     styles: Option<Vec<String>>,
 ) -> Result<Response, ContractError> {
     let Context { deps, .. } = ctx;
+    let mut path = path;
+
+    // Ensure all paths are absolute
+    if !path.starts_with("/") {
+        path = format!("/{}", path);
+    }
 
     ROUTE_TEMPLATES.save(deps.storage, &path, &template)?;
 

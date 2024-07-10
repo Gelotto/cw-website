@@ -1,6 +1,6 @@
 use crate::{
     error::ContractError,
-    state::{models::Asset, storage::ROUTE_ASSETS},
+    state::{models::Asset, storage::ASSETS},
 };
 use cosmwasm_std::{attr, Binary, Response};
 
@@ -14,7 +14,7 @@ pub fn exec_upsert_asset(
 ) -> Result<Response, ContractError> {
     let Context { deps, .. } = ctx;
 
-    ROUTE_ASSETS.save(
+    ASSETS.save(
         deps.storage,
         &name,
         &Asset {

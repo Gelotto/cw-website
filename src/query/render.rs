@@ -24,6 +24,12 @@ pub fn query_render(
     let ReadonlyContext { deps, env, .. } = ctx;
     let config = CONFIG.load(deps.storage)?;
 
+    // Ensure all path is absolute
+    let mut path = path;
+    if !path.starts_with("/") {
+        path = format!("/{}", path);
+    }
+
     // Initialize template renderer
     let mut template = TinyTemplate::new();
     let template_str = ROUTE_TEMPLATES
@@ -58,7 +64,7 @@ pub fn query_render(
 
     // Render HTML <head>
     let head = render_head(
-        &config.rest,
+        &config.rest_node,
         &env.contract.address,
         title,
         keywords,
