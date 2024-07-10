@@ -13,6 +13,11 @@ pub struct WebsiteMetadataContext {
     pub title: String,
     pub path: String,
 }
+#[cw_serde]
+pub struct AssetInfo {
+    pub name: String,
+    pub mime_type: String,
+}
 
 #[cw_serde]
 pub struct Asset {
