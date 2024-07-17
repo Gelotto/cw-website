@@ -34,6 +34,19 @@ pub struct Link {
 }
 
 #[cw_serde]
+pub enum EmbeddedLogo {
+    Svg(Binary),
+    Png(Binary),
+}
+
+#[cw_serde]
+pub struct File {
+    pub name: String,
+    pub mime_type: String,
+    pub uri: String,
+}
+
+#[cw_serde]
 pub struct TemplateInfo {
     pub path: String,
     pub keywords: Vec<String>,

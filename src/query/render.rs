@@ -16,18 +16,26 @@ use crate::{
 
 use super::ReadonlyContext;
 
+const FAVICON_PATH: &str = "favicon.ico";
+
 pub fn query_render(
     ctx: ReadonlyContext,
     path: String,
     context: Option<Value>,
 ) -> Result<String, ContractError> {
     let ReadonlyContext { deps, env, .. } = ctx;
-    let config = CONFIG.load(deps.storage)?;
 
     // Ensure all path is absolute
     let mut path = path;
     if !path.starts_with("/") {
         path = format!("/{}", path);
+    }
+
+    if path == FAVICON_PATH {
+        return Ok(SITE_FAVICON
+            .may_load(deps.storage)?
+            .and_then(|link| Some(link.uri.to_owned()))
+            .unwrap_or_default());
     }
 
     // Initialize template renderer
@@ -61,6 +69,8 @@ pub fn query_render(
     if let Some(data) = context {
         map.insert("data".to_owned(), data);
     };
+
+    let config = CONFIG.load(deps.storage)?;
 
     // Render HTML <head>
     let head = render_head(
