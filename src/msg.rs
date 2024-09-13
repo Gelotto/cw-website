@@ -2,7 +2,7 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Binary;
 use serde_json::Value;
 
-use crate::state::models::{Config, Link, TemplateInfo};
+use crate::state::models::{AssetInfo, AssetType, Config, Link, TemplateInfo};
 
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -17,6 +17,7 @@ pub struct InstantiateMsg {
 pub enum AssetsExecuteMsg {
     Upsert {
         name: String,
+        asset_type: AssetType,
         mime_type: String,
         data: Binary,
     },
@@ -55,10 +56,24 @@ pub struct ContextValue {
 pub enum QueryMsg {
     Config {},
     Metadata {},
-    Render { path: String, context: Option<Value> },
-    Asset { name: String },
-    Assets {},
-    Template { path: String },
+    Render {
+        path: String,
+        context: Option<Value>,
+        raw: Option<bool>,
+        inject: Option<bool>,
+    },
+    Script {
+        name: String,
+    },
+    Style {
+        name: String,
+    },
+    Assets {
+        path: String,
+    },
+    Template {
+        path: String,
+    },
     Templates {},
 }
 
@@ -70,3 +85,9 @@ pub struct ConfigResponse(pub Config);
 
 #[cw_serde]
 pub struct TemplatesResponse(pub Vec<TemplateInfo>);
+
+#[cw_serde]
+pub struct TemplateAssetsResponse {
+    pub scripts: Vec<AssetInfo>,
+    pub styles: Vec<AssetInfo>,
+}

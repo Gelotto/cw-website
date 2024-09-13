@@ -9,7 +9,8 @@ pub const SITE_FAVICON: Item<Link> = Item::new("website_favicon");
 pub const SITE_KEYWORDS: Item<Vec<String>> = Item::new("site_keywords");
 pub const SITE_DESCRIPTION: Item<String> = Item::new("site_description");
 
-pub const ASSETS: Map<&String, Asset> = Map::new("assets");
+pub const SCRIPT_ASSETS: Map<&String, Asset> = Map::new("scripts");
+pub const STYLE_ASSETS: Map<&String, Asset> = Map::new("styles");
 
 pub const ROUTE_TEMPLATES: Map<&String, String> = Map::new("route_templates");
 pub const ROUTE_KEYWORDS: Map<&String, Vec<String>> = Map::new("route_keywords");

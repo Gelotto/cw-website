@@ -1,22 +1,39 @@
-use cosmwasm_std::Order;
-
 use crate::{
     error::ContractError,
-    state::{models::AssetInfo, storage::ASSETS},
+    msg::TemplateAssetsResponse,
+    state::{
+        models::AssetInfo,
+        storage::{ROUTE_SCRIPT_NAMES, ROUTE_STYLE_NAMES, SCRIPT_ASSETS, STYLE_ASSETS},
+    },
 };
 
 use super::ReadonlyContext;
 
-pub fn query_assets(ctx: ReadonlyContext) -> Result<Vec<AssetInfo>, ContractError> {
+pub fn query_assets(
+    ctx: ReadonlyContext,
+    path: String,
+) -> Result<TemplateAssetsResponse, ContractError> {
     let ReadonlyContext { deps, .. } = ctx;
-    Ok(ASSETS
-        .range(deps.storage, None, None, Order::Ascending)
-        .map(|r| {
-            let (_, asset) = r.unwrap();
-            AssetInfo {
-                mime_type: asset.mime_type,
-                name: asset.name,
-            }
+    let mut scripts: Vec<AssetInfo> = Vec::with_capacity(2);
+    let mut styles: Vec<AssetInfo> = Vec::with_capacity(2);
+
+    for name in ROUTE_SCRIPT_NAMES.load(deps.storage, &path).unwrap_or_default() {
+        let asset = SCRIPT_ASSETS.load(deps.storage, &name)?;
+        scripts.push(AssetInfo {
+            mime_type: asset.mime_type,
+            name: asset.name,
+            data: asset.data,
         })
-        .collect())
+    }
+
+    for name in ROUTE_STYLE_NAMES.load(deps.storage, &path).unwrap_or_default() {
+        let asset = STYLE_ASSETS.load(deps.storage, &name)?;
+        styles.push(AssetInfo {
+            mime_type: asset.mime_type,
+            name: asset.name,
+            data: asset.data,
+        })
+    }
+
+    Ok(TemplateAssetsResponse { scripts, styles })
 }

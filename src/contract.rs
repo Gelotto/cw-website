@@ -11,6 +11,7 @@ use crate::query::template::query_template;
 use crate::query::templates::query_templates;
 use crate::query::{config::query_config, ReadonlyContext};
 use crate::state;
+use crate::state::models::AssetType;
 use cosmwasm_std::{entry_point, to_json_binary};
 use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Response};
 use cw2::set_contract_version;
@@ -61,7 +62,12 @@ pub fn execute(
 
         // Asset-related executions
         ExecuteMsg::Assets(msg) => match msg {
-            AssetsExecuteMsg::Upsert { name, mime_type, data } => exec_upsert_asset(ctx, name, mime_type, data),
+            AssetsExecuteMsg::Upsert {
+                name,
+                asset_type,
+                mime_type,
+                data,
+            } => exec_upsert_asset(ctx, name, asset_type, mime_type, data),
         },
     }
 }
@@ -74,11 +80,17 @@ pub fn query(
 ) -> Result<Binary, ContractError> {
     let ctx = ReadonlyContext { deps, env };
     let result = match msg {
-        QueryMsg::Render { path, context } => to_json_binary(&query_render(ctx, path, context)?),
+        QueryMsg::Render {
+            path,
+            context,
+            raw,
+            inject,
+        } => to_json_binary(&query_render(ctx, path, context, raw, inject)?),
         QueryMsg::Config {} => to_json_binary(&query_config(ctx)?),
         QueryMsg::Metadata {} => to_json_binary(&query_config(ctx)?),
-        QueryMsg::Asset { name } => to_json_binary(&query_asset(ctx, name)?),
-        QueryMsg::Assets {} => to_json_binary(&query_assets(ctx)?),
+        QueryMsg::Script { name } => to_json_binary(&query_asset(ctx, AssetType::Script, name)?),
+        QueryMsg::Style { name } => to_json_binary(&query_asset(ctx, AssetType::Style, name)?),
+        QueryMsg::Assets { path } => to_json_binary(&query_assets(ctx, path)?),
         QueryMsg::Template { path } => to_json_binary(&query_template(ctx, path)?),
         QueryMsg::Templates {} => to_json_binary(&query_templates(ctx)?),
     }?;

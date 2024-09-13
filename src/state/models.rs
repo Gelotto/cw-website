@@ -13,10 +13,21 @@ pub struct WebsiteMetadataContext {
     pub title: String,
     pub path: String,
 }
+
+pub const ASSET_TYPE_SCRIPT: u8 = 0;
+pub const ASSET_TYPE_CSS: u8 = 1;
+
+#[cw_serde]
+pub enum AssetType {
+    Script,
+    Style,
+}
+
 #[cw_serde]
 pub struct AssetInfo {
     pub name: String,
     pub mime_type: String,
+    pub data: Binary,
 }
 
 #[cw_serde]

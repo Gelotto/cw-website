@@ -22,8 +22,11 @@ pub fn query_render(
     ctx: ReadonlyContext,
     path: String,
     context: Option<Value>,
+    raw: Option<bool>,
+    inject_assets: Option<bool>,
 ) -> Result<String, ContractError> {
     let ReadonlyContext { deps, env, .. } = ctx;
+    let inject_assets = inject_assets.unwrap_or_default();
 
     // Ensure all path is absolute
     let mut path = path;
@@ -72,28 +75,33 @@ pub fn query_render(
 
     let config = CONFIG.load(deps.storage)?;
 
-    // Render HTML <head>
-    let head = render_head(
-        &config.rest_node,
-        &env.contract.address,
-        title,
-        keywords,
-        SITE_DESCRIPTION.may_load(deps.storage)?,
-        SITE_FAVICON.may_load(deps.storage)?,
-        ROUTE_STYLE_NAMES.may_load(deps.storage, &path).unwrap_or_default(),
-        ROUTE_SCRIPT_NAMES.may_load(deps.storage, &path).unwrap_or_default(),
-    );
-
     // Render HTML <body>
     let body = template
         .render(&path, &Value::Object(map))
         .map_err(|e| ContractError::RenderError { reason: e.to_string() })?;
 
-    // Return full HTML doc
-    Ok(format!(
-        "<!DOCTYPE html>\n<html lang=\"en\">\n{}\n{}\n</html>",
-        head, body
-    ))
+    // Render HTML <head>
+    if raw.unwrap_or(false) {
+        Ok(body)
+    } else {
+        let head = render_head(
+            &config.rest_node,
+            &env.contract.address,
+            title,
+            keywords,
+            SITE_DESCRIPTION.may_load(deps.storage)?,
+            SITE_FAVICON.may_load(deps.storage)?,
+            ROUTE_STYLE_NAMES.may_load(deps.storage, &path).unwrap_or_default(),
+            ROUTE_SCRIPT_NAMES.may_load(deps.storage, &path).unwrap_or_default(),
+            inject_assets,
+        );
+
+        // Return full HTML doc
+        Ok(format!(
+            "<!DOCTYPE html>\n<html lang=\"en\">\n{}\n{}\n</html>",
+            head, body
+        ))
+    }
 }
 
 fn render_head(
@@ -105,6 +113,7 @@ fn render_head(
     maybe_favicon: Option<Link>,
     maybe_stylesheet_names: Option<Vec<String>>,
     maybe_script_names: Option<Vec<String>>,
+    inject_assets: bool,
 ) -> String {
     let mut template = String::from("<head>\n");
 
@@ -143,20 +152,23 @@ fn render_head(
         template.push_str(&format!(r#"<meta name="keywords" content="{}">"#, content));
         template.push_str("\n");
     }
-    if let Some(names) = maybe_stylesheet_names {
-        for (i, name) in names.iter().enumerate() {
-            let id = format!("_styleInjector{}", i);
-            let injection_script = inject_css(id, host, contract, &name);
-            template.push_str(&injection_script);
-            template.push_str("\n");
+
+    if inject_assets {
+        if let Some(names) = maybe_stylesheet_names {
+            for (i, name) in names.iter().enumerate() {
+                let id = format!("_styleInjector{}", i);
+                let injection_script = inject_css(id, host, contract, &name);
+                template.push_str(&injection_script);
+                template.push_str("\n");
+            }
         }
-    }
-    if let Some(names) = maybe_script_names {
-        for (i, name) in names.iter().enumerate() {
-            let id = format!("_scriptInjector{}", i);
-            let injection_script = inject_script(id, host, contract, &name);
-            template.push_str(&injection_script);
-            template.push_str("\n");
+        if let Some(names) = maybe_script_names {
+            for (i, name) in names.iter().enumerate() {
+                let id = format!("_scriptInjector{}", i);
+                let injection_script = inject_script(id, host, contract, &name);
+                template.push_str(&injection_script);
+                template.push_str("\n");
+            }
         }
     }
     template.push_str(r#"</head>"#);
