@@ -1,7 +1,9 @@
+use cosmwasm_std::Addr;
 use cw_storage_plus::{Item, Map};
 
 use super::models::{Asset, Config, Link};
 
+pub const ADMIN: Item<Addr> = Item::new("admin");
 pub const CONFIG: Item<Config> = Item::new("config");
 
 pub const SITE_TITLE: Item<String> = Item::new("website_title");

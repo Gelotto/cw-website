@@ -28,6 +28,7 @@ pub enum TemplatesExecuteMsg {
     Upsert {
         path: String,
         template: String,
+        keywords: Option<Vec<String>>,
         scripts: Option<Vec<String>>,
         styles: Option<Vec<String>>,
     },

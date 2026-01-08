@@ -6,6 +6,7 @@ use crate::execute::{set_config::exec_set_config, Context};
 use crate::msg::{AssetsExecuteMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, TemplatesExecuteMsg};
 use crate::query::asset::query_asset;
 use crate::query::assets::query_assets;
+use crate::query::metadata::query_metadata;
 use crate::query::render::query_render;
 use crate::query::template::query_template;
 use crate::query::templates::query_templates;
@@ -55,9 +56,10 @@ pub fn execute(
             TemplatesExecuteMsg::Upsert {
                 path,
                 template,
+                keywords,
                 scripts,
                 styles,
-            } => exec_upsert_template(ctx, path, template, scripts, styles),
+            } => exec_upsert_template(ctx, path, template, keywords, scripts, styles),
         },
 
         // Asset-related executions
@@ -87,7 +89,7 @@ pub fn query(
             inject,
         } => to_json_binary(&query_render(ctx, path, context, raw, inject)?),
         QueryMsg::Config {} => to_json_binary(&query_config(ctx)?),
-        QueryMsg::Metadata {} => to_json_binary(&query_config(ctx)?),
+        QueryMsg::Metadata {} => to_json_binary(&query_metadata(ctx)?),
         QueryMsg::Script { name } => to_json_binary(&query_asset(ctx, AssetType::Script, name)?),
         QueryMsg::Style { name } => to_json_binary(&query_asset(ctx, AssetType::Style, name)?),
         QueryMsg::Assets { path } => to_json_binary(&query_assets(ctx, path)?),

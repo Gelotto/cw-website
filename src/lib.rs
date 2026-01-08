@@ -7,3 +7,6 @@ pub mod query;
 pub mod msg;
 pub mod error;
 pub mod state;
+
+#[cfg(test)]
+mod tests;

@@ -13,7 +13,15 @@ FILE_CODE_ID="code-id"
 echo "using build dir $BUILD_DIR"
 CODE_ID=$(cat $BUILD_DIR/$FILE_CODE_ID)
 
-INSTANTIATE_MSG='{}'
+INSTANTIATE_MSG='{
+  "config": {
+    "rest_node": "http://localhost:1317"
+  },
+  "title": "My Website",
+  "description": "A website on the blockchain",
+  "keywords": ["blockchain", "cosmwasm"],
+  "favicon": null
+}'
 
 case $NETWORK in
   devnet)

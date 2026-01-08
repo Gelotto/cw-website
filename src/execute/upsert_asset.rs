@@ -7,7 +7,7 @@ use crate::{
 };
 use cosmwasm_std::{attr, Binary, Response};
 
-use super::Context;
+use super::{assert_admin, Context};
 
 pub fn exec_upsert_asset(
     ctx: Context,
@@ -16,6 +16,7 @@ pub fn exec_upsert_asset(
     mime_type: String,
     data: Binary,
 ) -> Result<Response, ContractError> {
+    assert_admin(&ctx)?;
     let Context { deps, .. } = ctx;
 
     let map = match asset_type {

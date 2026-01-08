@@ -1,10 +1,7 @@
-use cosmwasm_std::{Order, StdResult};
-
 use crate::{
     error::ContractError,
-    msg::TemplatesResponse,
     state::{
-        models::{TemplateInfo, TemplateResponse},
+        models::TemplateResponse,
         storage::{ROUTE_KEYWORDS, ROUTE_SCRIPT_NAMES, ROUTE_STYLE_NAMES, ROUTE_TEMPLATES},
     },
 };

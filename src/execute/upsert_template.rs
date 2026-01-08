@@ -1,18 +1,20 @@
 use crate::{
     error::ContractError,
-    state::storage::{ROUTE_SCRIPT_NAMES, ROUTE_STYLE_NAMES, ROUTE_TEMPLATES},
+    state::storage::{ROUTE_KEYWORDS, ROUTE_SCRIPT_NAMES, ROUTE_STYLE_NAMES, ROUTE_TEMPLATES},
 };
 use cosmwasm_std::{attr, Response};
 
-use super::Context;
+use super::{assert_admin, Context};
 
 pub fn exec_upsert_template(
     ctx: Context,
     path: String,
     template: String,
+    keywords: Option<Vec<String>>,
     scripts: Option<Vec<String>>,
     styles: Option<Vec<String>>,
 ) -> Result<Response, ContractError> {
+    assert_admin(&ctx)?;
     let Context { deps, .. } = ctx;
     let mut path = path;
 
@@ -22,6 +24,10 @@ pub fn exec_upsert_template(
     }
 
     ROUTE_TEMPLATES.save(deps.storage, &path, &template)?;
+
+    if let Some(keywords) = keywords {
+        ROUTE_KEYWORDS.save(deps.storage, &path, &keywords)?;
+    }
 
     if let Some(scripts) = scripts {
         ROUTE_SCRIPT_NAMES.save(deps.storage, &path, &scripts)?;

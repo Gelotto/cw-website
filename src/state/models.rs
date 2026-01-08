@@ -1,7 +1,5 @@
-use std::fmt;
-
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Binary, Uint64};
+use cosmwasm_std::Binary;
 
 #[cw_serde]
 pub struct Config {

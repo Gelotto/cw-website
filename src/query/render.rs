@@ -18,6 +18,15 @@ use super::ReadonlyContext;
 
 const FAVICON_PATH: &str = "favicon.ico";
 
+/// Escape HTML entities to prevent injection attacks
+fn escape_html(s: &str) -> String {
+    s.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "&#x27;")
+}
+
 pub fn query_render(
     ctx: ReadonlyContext,
     path: String,
@@ -37,7 +46,7 @@ pub fn query_render(
     if path == FAVICON_PATH {
         return Ok(SITE_FAVICON
             .may_load(deps.storage)?
-            .and_then(|link| Some(link.uri.to_owned()))
+            .map(|link| link.uri)
             .unwrap_or_default());
     }
 
@@ -133,11 +142,14 @@ fn render_head(
     template.push_str("\n");
 
     if let Some(description) = maybe_description {
-        template.push_str(&format!(r#"<meta name="description" content="{}">"#, description));
+        template.push_str(&format!(
+            r#"<meta name="description" content="{}">"#,
+            escape_html(&description)
+        ));
         template.push_str("\n");
     }
 
-    template.push_str(&format!(r#"<title>{}</title>"#, title));
+    template.push_str(&format!(r#"<title>{}</title>"#, escape_html(&title)));
     template.push_str("\n");
 
     if let Some(favicon) = maybe_favicon {

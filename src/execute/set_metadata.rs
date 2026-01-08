@@ -7,7 +7,7 @@ use crate::{
 };
 use cosmwasm_std::{attr, Response};
 
-use super::Context;
+use super::{assert_admin, Context};
 
 pub fn exec_set_metadata(
     ctx: Context,
@@ -16,6 +16,7 @@ pub fn exec_set_metadata(
     keywords: Option<Vec<String>>,
     favicon: Option<Link>,
 ) -> Result<Response, ContractError> {
+    assert_admin(&ctx)?;
     let Context { deps, .. } = ctx;
     SITE_TITLE.save(deps.storage, &title)?;
 
